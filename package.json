@@ -1,0 +1,25 @@
+{
+  "name": "buhoquiz",
+  "version": "1.0.0",
+  "description": "BúhoQuiz - juego de preguntas en tiempo real cargado desde Excel",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "plantilla": "node scripts/crear_plantilla.js",
+    "simular": "node scripts/simular.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0",
+    "express": "^4.21.1",
+    "multer": "^2.5.0",
+    "qrcode": "^1.5.4",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "socket.io-client": "^4.8.1"
+  }
+}

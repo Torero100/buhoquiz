@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#061033">
+  <title>BúhoQuiz · Maestro</title>
+  <link rel="icon" href="/img/icono.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/estilo.css">
+  <style>
+    .pantalla { height: 100vh; height: 100dvh; display: flex; flex-direction: column; }
+    .cabecera { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 24px; flex: none; }
+    .cabecera .acciones { display: flex; gap: 10px; flex-wrap: wrap; }
+    .cuerpo { flex: 1; min-height: 0; overflow: auto; padding: 4px 24px 14px; display: flex; flex-direction: column; gap: 14px; }
+    #v-pregunta { overflow: hidden; }
+    .pie { flex: none; display: flex; justify-content: flex-end; align-items: center; gap: 14px; padding: 0 24px 16px; }
+    .pie:not(:has(.boton:not(.oculto))) { padding-bottom: 0; }
+
+    /* Login */
+    #login .tarjeta { width: min(420px, 100%); }
+
+    /* Carga */
+    .carga-grid { display: grid; grid-template-columns: minmax(300px, 420px) 1fr; gap: 20px; align-items: start; }
+    @media (max-width: 900px) { .carga-grid { grid-template-columns: 1fr; } }
+    .zona-soltar { border: 3px dashed var(--borde); border-radius: var(--radio); padding: 30px 16px; text-align: center; cursor: pointer; transition: background .2s, border-color .2s; }
+    .zona-soltar.encima { background: rgba(0, 212, 255, .1); border-color: var(--cian); }
+    .zona-soltar .icono { font-size: 44px; }
+    .lista-archivos { list-style: none; padding: 0; margin: 10px 0 0; font-size: 14px; max-height: 160px; overflow: auto; }
+    .lista-archivos li { padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,.06); }
+    .mensajes { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+    .mensajes li { padding: 10px 14px; border-radius: 10px; font-size: 15px; }
+    .mensajes .err { background: rgba(232, 51, 109, .18); border: 1px solid rgba(232, 51, 109, .5); }
+    .mensajes .warn { background: rgba(255, 204, 46, .12); border: 1px solid rgba(255, 204, 46, .4); }
+    .mensajes .ok { background: rgba(20, 184, 122, .18); border: 1px solid rgba(20, 184, 122, .5); font-size: 17px; }
+    table.vista { width: 100%; border-collapse: collapse; font-size: 14px; }
+    table.vista th, table.vista td { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,.08); text-align: left; vertical-align: top; }
+    table.vista th { color: var(--texto-suave); font-weight: 800; }
+    table.vista img { width: 64px; height: 48px; object-fit: contain; background: rgba(0,0,0,.25); border-radius: 6px; }
+    .etq { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; background: rgba(47, 140, 255, .25); border: 1px solid var(--borde); white-space: nowrap; }
+    .etq.MULTIPLE { background: rgba(232, 51, 109, .25); }
+    .etq.VF { background: rgba(20, 184, 122, .25); }
+    .op-mini { display: inline-block; margin: 2px 4px 2px 0; padding: 2px 8px; border-radius: 6px; background: rgba(255,255,255,.08); }
+    .op-mini.ok { background: rgba(20, 184, 122, .45); }
+
+    /* Sala de espera */
+    .sala { display: grid; grid-template-columns: minmax(320px, 1fr) 1.3fr; gap: 24px; flex: 1; }
+    @media (max-width: 900px) { .sala { grid-template-columns: 1fr; } }
+    .acceso { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
+    .acceso .url { font-size: 22px; color: var(--texto-suave); }
+    .acceso .url b { color: #fff; }
+    .pin-grande { font-family: 'Fredoka', sans-serif; font-size: clamp(56px, 8vw, 104px); font-weight: 700; letter-spacing: 10px; color: #fff; text-shadow: 0 0 30px rgba(0, 212, 255, .7); line-height: 1; }
+    .qr { background: #fff; padding: 10px; border-radius: 16px; width: min(260px, 60vw); aspect-ratio: 1; box-shadow: 0 0 40px rgba(0, 212, 255, .35); }
+    .qr img { width: 100%; height: 100%; display: block; }
+    .jugadores { display: flex; flex-wrap: wrap; gap: 10px; align-content: flex-start; }
+    .jugador { padding: 10px 16px; border-radius: 14px; background: rgba(47, 140, 255, .22); border: 1px solid var(--borde); font-family: 'Fredoka', sans-serif; font-size: 20px; cursor: pointer; animation: rebote .45s ease-out both; }
+    .jugador:hover { background: rgba(232, 51, 109, .35); text-decoration: line-through; }
+    .jugador.desconectado { opacity: .45; }
+    .contador { font-family: 'Fredoka', sans-serif; font-size: 26px; }
+
+    /* Pregunta */
+    .info-pregunta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .info-pregunta .num { font-family: 'Fredoka', sans-serif; font-size: 22px; }
+    .info-pregunta .etq { font-size: 15px; padding: 6px 14px; }
+    .anillo { position: relative; width: 84px; height: 84px; flex: none; }
+    .anillo svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .anillo .fondo-a { stroke: rgba(255,255,255,.12); }
+    .anillo .barra-a { stroke: var(--cian); transition: stroke-dashoffset .2s linear, stroke .3s; filter: drop-shadow(0 0 6px rgba(0,212,255,.8)); }
+    .anillo.urgente .barra-a { stroke: var(--rojo); filter: drop-shadow(0 0 6px rgba(232,51,109,.8)); }
+    .anillo span { position: absolute; inset: 0; display: grid; place-items: center; font-family: 'Fredoka', sans-serif; font-size: 30px; }
+    .respondieron { text-align: center; font-family: 'Fredoka', sans-serif; line-height: 1; }
+    .respondieron b { font-size: 34px; display: block; }
+    .respondieron small { font-size: 13px; color: var(--texto-suave); }
+    .enunciado { font-family: 'Fredoka', sans-serif; font-weight: 600; text-align: center; padding: 18px 24px; background: #fff; color: #0a1a4a; border-radius: var(--radio); box-shadow: var(--sombra); line-height: 1.2; }
+    .media { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+    .media img { max-width: 100%; max-height: 100%; min-height: 0; object-fit: contain; border-radius: 14px; box-shadow: var(--sombra); background: rgba(0,0,0,.2); }
+    .media.vacia { flex: 0; }
+    #v-pregunta:has(.media.vacia) .opciones-grandes .opcion { min-height: clamp(90px, 20vh, 180px); font-size: clamp(22px, 2.8vw, 38px); }
+    #v-pregunta:has(.media.vacia) .opciones-grandes { margin-top: auto; margin-bottom: auto; }
+    .media .sin-img { color: var(--texto-suave); font-size: 15px; }
+    .opciones-grandes { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .opciones-grandes { flex: none; }
+    .info-pregunta, .enunciado, .resumen-revelacion { flex: none; }
+    .opciones-grandes .opcion { font-size: clamp(18px, 2.2vw, 30px); min-height: clamp(64px, 10vh, 96px); transition: opacity .3s, transform .3s, filter .3s; }
+    .opciones-grandes .opcion .conteo { margin-left: auto; font-size: 26px; display: none; align-items: center; gap: 8px; }
+    .opciones-grandes .opcion .barra-conteo { position: absolute; left: 0; bottom: 0; height: 6px; background: rgba(255,255,255,.75); width: 0; transition: width .8s ease-out; }
+    .revelado .opcion .conteo { display: flex; }
+    .revelado .opcion.no-correcta { opacity: .35; filter: grayscale(.6); transform: scale(.97); }
+    .revelado .opcion.correcta { outline: 5px solid #fff; outline-offset: -5px; animation: pulso 1.2s ease-in-out 2; }
+    .revelado .opcion.correcta .texto::after { content: '  ✔'; }
+    .resumen-revelacion { text-align: center; font-family: 'Fredoka', sans-serif; font-size: 22px; color: var(--texto-suave); }
+
+    /* Ranking */
+    .ranking { width: min(900px, 100%); margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+    .fila-rank { display: grid; grid-template-columns: 60px 1fr auto auto; gap: 16px; align-items: center; padding: 12px 20px; border-radius: 16px; background: var(--tarjeta); border: 1px solid var(--borde); font-family: 'Fredoka', sans-serif; font-size: 24px; animation: aparecer .4s ease-out both; }
+    .fila-rank .pos { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: rgba(47,140,255,.35); }
+    .fila-rank.p1 { background: linear-gradient(90deg, rgba(255,204,46,.35), rgba(255,204,46,.08)); border-color: rgba(255,204,46,.6); }
+    .fila-rank.p1 .pos { background: #ffcc2e; color: #3a2400; }
+    .fila-rank.p2 .pos { background: #d6e0ea; color: #26313d; }
+    .fila-rank.p3 .pos { background: #dc8a48; color: #3a1a05; }
+    .fila-rank .nom { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .fila-rank .ganado { font-size: 18px; color: #5ff0b5; }
+    .titulo-seccion { text-align: center; font-size: 40px; text-shadow: 0 0 24px rgba(0,212,255,.5); }
+
+    /* Podio */
+    .podio { flex: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; gap: 18px; width: min(1100px, 100%); margin: 0 auto; }
+    .puesto { display: flex; flex-direction: column; align-items: center; opacity: 0; }
+    .puesto.visible { animation: rebote .8s cubic-bezier(.2,.9,.3,1.3) both; opacity: 1; }
+    .puesto .buho { width: min(220px, 22vw, 27vh); filter: drop-shadow(0 12px 24px rgba(0,0,0,.4)); }
+    .puesto.p1 .buho { width: min(270px, 27vw, 33vh); filter: drop-shadow(0 0 40px rgba(255,204,46,.55)); }
+    .puesto .nombre-p { font-family: 'Fredoka', sans-serif; font-size: clamp(20px, 2.4vw, 34px); margin-top: 8px; text-align: center; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .puesto .pts-p { color: var(--texto-suave); font-size: 20px; margin-bottom: 10px; }
+    .escalon { width: 100%; border-radius: 18px 18px 0 0; display: grid; place-items: center; font-family: 'Fredoka', sans-serif; font-size: 64px; color: rgba(255,255,255,.9); box-shadow: inset 0 8px 0 rgba(255,255,255,.25), var(--sombra); }
+    .p1 .escalon { height: min(210px, 19vh); background: linear-gradient(180deg, #ffd84d, #d18a00); }
+    .p2 .escalon { height: min(150px, 13vh); background: linear-gradient(180deg, #eef3f8, #8e9fb2); color: #3e4b5b; }
+    .p3 .escalon { height: min(110px, 9vh); background: linear-gradient(180deg, #f0a368, #a14f19); }
+    #v-podio { gap: 6px; }
+    .titulo-podio { font-size: clamp(36px, 5vw, 64px); text-align: center; background: linear-gradient(90deg, #ffcc2e, #fff, #00d4ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  </style>
+</head>
+<body>
+  <!-- Login -->
+  <section id="login" class="centrado">
+    <form id="form-login" class="tarjeta pila">
+      <div class="marca" style="justify-content:center"><div id="logo-login"></div><h1>Búho<span>Quiz</span></h1></div>
+      <p class="suave" style="text-align:center;margin:0">Panel del maestro</p>
+      <div>
+        <label for="clave">Clave de maestro</label>
+        <input id="clave" type="password" autocomplete="current-password" required>
+      </div>
+      <button class="boton ancho" type="submit">Ingresar</button>
+      <div id="error-login" class="error-msg" role="alert"></div>
+    </form>
+  </section>
+
+  <!-- Panel principal (todo lo demás) -->
+  <div id="panel" class="pantalla oculto">
+    <header class="cabecera">
+      <div class="marca"><div id="logo-panel"></div><h1>Búho<span>Quiz</span></h1></div>
+      <div class="acciones">
+        <button id="btn-completa" class="boton fantasma" type="button">⛶ Pantalla completa</button>
+        <button id="btn-nuevo" class="boton fantasma oculto" type="button">↺ Nuevo juego</button>
+      </div>
+    </header>
+
+    <!-- Carga del Excel -->
+    <main id="v-carga" class="cuerpo oculto">
+      <div class="carga-grid">
+        <div class="tarjeta pila">
+          <h2>1. Carga las preguntas</h2>
+          <label id="zona" class="zona-soltar" for="archivos">
+            <div class="icono">📄🖼️</div>
+            <div><b>Arrastra aquí</b> el Excel y sus imágenes<br><span class="suave">o haz clic para elegirlos</span></div>
+            <input id="archivos" type="file" multiple accept=".xlsx,image/*" hidden>
+          </label>
+          <ul id="lista-archivos" class="lista-archivos"></ul>
+          <button id="btn-validar" class="boton ancho" type="button" disabled>Validar Excel</button>
+          <a class="boton fantasma ancho" href="/plantilla_buhoquiz.xlsx" download>⬇ Descargar plantilla Excel</a>
+          <p class="suave" style="font-size:13px;margin:0">Las imágenes pueden ser URLs dentro del Excel o archivos que subes aquí junto al Excel (con el mismo nombre que escribiste en la columna <i>imagen</i>).</p>
+        </div>
+        <div class="tarjeta pila">
+          <div class="fila espaciar">
+            <h2 id="titulo-resultado">2. Revisión</h2>
+            <button id="btn-abrir" class="boton oro grande oculto" type="button">Abrir sala ▶</button>
+          </div>
+          <ul id="mensajes" class="mensajes"><li class="suave" style="padding:0">Carga un Excel para ver aquí las preguntas y los posibles errores.</li></ul>
+          <div style="overflow:auto"><table id="tabla" class="vista oculto"><thead><tr><th>#</th><th>Tipo</th><th>Pregunta</th><th>Img</th><th>Opciones (verde = correcta)</th><th>Seg</th><th>Pts</th></tr></thead><tbody></tbody></table></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Sala de espera -->
+    <main id="v-lobby" class="cuerpo oculto">
+      <div class="sala">
+        <div class="tarjeta acceso">
+          <div class="url">Entra en <b id="url-acceso"></b></div>
+          <div class="suave">PIN del juego</div>
+          <div id="pin" class="pin-grande"></div>
+          <div class="qr"><img id="qr" alt="Código QR para unirse"></div>
+          <div class="suave">Escanea el QR para entrar directo</div>
+        </div>
+        <div class="tarjeta pila">
+          <div class="fila espaciar">
+            <h2 id="nombre-juego"></h2>
+            <div class="contador">👥 <span id="num-jugadores">0</span></div>
+          </div>
+          <p class="suave" style="margin:0">Haz clic en un nombre para retirarlo del juego.</p>
+          <div id="jugadores" class="jugadores"></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Pregunta / revelación -->
+    <main id="v-pregunta" class="cuerpo oculto">
+      <div class="info-pregunta">
+        <span id="q-num" class="num"></span>
+        <span id="q-tipo" class="etq"></span>
+        <span style="flex:1"></span>
+        <div class="respondieron"><b id="q-resp">0</b><small>respuestas</small></div>
+        <div id="q-anillo" class="anillo">
+          <svg viewBox="0 0 60 60"><circle class="fondo-a" cx="30" cy="30" r="26" fill="none" stroke-width="6"/><circle class="barra-a" cx="30" cy="30" r="26" fill="none" stroke-width="6" stroke-linecap="round" stroke-dasharray="163.36" stroke-dashoffset="0"/></svg>
+          <span id="q-seg">20</span>
+        </div>
+      </div>
+      <div id="q-texto" class="enunciado"></div>
+      <div id="q-media" class="media"></div>
+      <div id="q-resumen" class="resumen-revelacion oculto"></div>
+      <div id="q-opciones" class="opciones-grandes"></div>
+    </main>
+
+    <!-- Ranking -->
+    <main id="v-ranking" class="cuerpo oculto">
+      <h2 class="titulo-seccion">🏆 Ranking</h2>
+      <p id="rank-sub" class="suave" style="text-align:center;margin:0"></p>
+      <div id="ranking" class="ranking"></div>
+    </main>
+
+    <!-- Podio -->
+    <main id="v-podio" class="cuerpo oculto">
+      <h2 class="titulo-podio">¡Ganadores de los Búhos!</h2>
+      <div id="podio" class="podio festejo"></div>
+    </main>
+
+    <footer class="pie">
+      <span id="pie-info" class="suave"></span>
+      <span id="pie-error" class="error-msg" style="margin:0"></span>
+      <button id="btn-resultados" class="boton fantasma oculto" type="button">⬇ Descargar resultados (Excel)</button>
+      <button id="btn-avanzar" class="boton oro grande oculto" type="button"></button>
+    </footer>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/comun.js"></script>
+  <script src="/js/maestro.js"></script>
+</body>
+</html>

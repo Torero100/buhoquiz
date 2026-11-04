@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#061033">
+  <title>BúhoQuiz</title>
+  <link rel="icon" href="/img/icono.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/estilo.css">
+  <style>
+    body { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+    .pantalla { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+    .contenido-centro { flex: 1; display: grid; place-items: center; padding: 20px 16px; text-align: center; }
+    .caja { width: 100%; max-width: 420px; }
+    .logo-grande { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-bottom: 22px; }
+    .logo-grande .buho { width: 130px; }
+    .logo-grande h1 { font-size: 42px; }
+    .logo-grande h1 span { color: var(--cian); text-shadow: 0 0 22px rgba(0, 212, 255, .7); }
+
+    .barra { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; background: rgba(3, 10, 35, .55); border-bottom: 1px solid var(--borde); font-size: 15px; }
+    .barra .nombre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 45%; }
+    .reloj { font-family: 'Fredoka', sans-serif; font-size: 22px; min-width: 52px; height: 40px; padding: 0 10px; border-radius: 20px; background: var(--azul); display: grid; place-items: center; box-shadow: 0 0 16px rgba(47, 140, 255, .6); }
+    .reloj.urgente { background: var(--rojo); animation: pulso .5s infinite; box-shadow: 0 0 16px rgba(232, 51, 109, .7); }
+
+    .zona-opciones { flex: 1; display: flex; flex-direction: column; padding: 12px; gap: 12px; }
+    .aviso-tipo { text-align: center; font-size: 15px; color: var(--texto-suave); }
+    .rejilla { flex: 1; display: grid; gap: 12px; grid-template-columns: 1fr 1fr; grid-auto-rows: 1fr; }
+    .rejilla.dos { grid-template-columns: 1fr; }
+    .rejilla .opcion { flex-direction: column; justify-content: center; align-items: center; text-align: center; font-size: clamp(16px, 4.6vw, 24px); min-height: 110px; cursor: pointer; transition: transform .1s, filter .15s, opacity .15s; padding: 12px; }
+    .rejilla .opcion:active { transform: scale(.96); }
+    .rejilla .opcion .texto { display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+    .rejilla .opcion.marcada { outline: 5px solid #fff; outline-offset: -5px; transform: scale(.97); }
+    .rejilla .opcion.marcada::after { content: '✔'; position: absolute; top: 8px; right: 10px; width: 30px; height: 30px; border-radius: 50%; background: #fff; color: #061033; display: grid; place-items: center; font-size: 18px; }
+    .rejilla.multiple .opcion:not(.marcada) { filter: saturate(.85); }
+    @media (max-height: 560px) { .rejilla .opcion { min-height: 70px; } }
+
+    .icono-grande { font-size: 70px; line-height: 1; }
+    .resultado { border-radius: 24px; padding: 28px 20px; box-shadow: var(--sombra); animation: rebote .6s ease-out both; }
+    .resultado.correcto { background: linear-gradient(160deg, #2ed396, #0b8a58); }
+    .resultado.parcial { background: linear-gradient(160deg, #ffbf3a, #d77e00); }
+    .resultado.incorrecto, .resultado.sin_respuesta { background: linear-gradient(160deg, #f0517f, #a3123f); }
+    .resultado h2 { font-size: 34px; margin: 10px 0 6px; }
+    .resultado .pts { font-family: 'Fredoka', sans-serif; font-size: 30px; }
+    .chips { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
+    .chip { padding: 8px 14px; border-radius: 12px; font-family: 'Fredoka', sans-serif; font-size: 18px; }
+    .podio-mio .buho { width: 190px; }
+    .puesto-grande { font-family: 'Fredoka', sans-serif; font-size: 54px; color: var(--oro); text-shadow: 0 0 24px rgba(255, 204, 46, .5); }
+    .puntos-espera { display: inline-flex; gap: 6px; }
+    .puntos-espera i { width: 12px; height: 12px; border-radius: 50%; background: var(--cian); animation: pulso 1s infinite; }
+    .puntos-espera i:nth-child(2) { animation-delay: .2s; } .puntos-espera i:nth-child(3) { animation-delay: .4s; }
+  </style>
+</head>
+<body>
+  <!-- Unirse -->
+  <section id="unirse" class="pantalla">
+    <div class="contenido-centro">
+      <div class="caja">
+        <div class="logo-grande"><div id="logo" class="flotar"></div><h1>Búho<span>Quiz</span></h1></div>
+        <form id="form-unirse" class="tarjeta pila" autocomplete="off">
+          <div>
+            <label for="pin">PIN del juego</label>
+            <input id="pin" class="pin" type="tel" inputmode="numeric" maxlength="6" placeholder="000000" required>
+          </div>
+          <div>
+            <label for="nombre">Tu nombre o apodo</label>
+            <input id="nombre" type="text" maxlength="20" placeholder="Ej. Búho veloz" required>
+          </div>
+          <button class="boton oro ancho grande" type="submit">¡Entrar!</button>
+          <div id="error-unirse" class="error-msg" role="alert"></div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Esperando inicio -->
+  <section id="espera" class="pantalla oculto">
+    <div class="contenido-centro">
+      <div class="caja pila" style="align-items:center">
+        <div id="buho-espera" class="flotar" style="width:150px"></div>
+        <h2 style="font-size:30px">¡Estás dentro!</h2>
+        <div class="tarjeta" style="font-size:24px;font-family:Fredoka,sans-serif" id="espera-nombre"></div>
+        <p class="suave">Mira la pantalla principal.<br>El juego empezará en un momento.</p>
+        <div class="puntos-espera"><i></i><i></i><i></i></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Responder -->
+  <section id="responder" class="pantalla oculto">
+    <div class="barra">
+      <span id="r-numero"></span>
+      <div id="r-reloj" class="reloj">20</div>
+      <span class="nombre" id="r-nombre"></span>
+    </div>
+    <div class="zona-opciones">
+      <div id="r-aviso" class="aviso-tipo"></div>
+      <div id="r-rejilla" class="rejilla"></div>
+      <button id="r-enviar" class="boton oro ancho grande oculto" type="button">Enviar respuesta</button>
+      <div id="r-error" class="error-msg" style="text-align:center"></div>
+    </div>
+  </section>
+
+  <!-- Respuesta enviada -->
+  <section id="enviado" class="pantalla oculto">
+    <div class="contenido-centro">
+      <div class="caja pila" style="align-items:center">
+        <div class="icono-grande">🦉</div>
+        <h2 style="font-size:30px">¡Respuesta enviada!</h2>
+        <div id="enviado-chips" class="chips"></div>
+        <p class="suave">Espera a que se cierre la pregunta…</p>
+        <div class="puntos-espera"><i></i><i></i><i></i></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Resultado de la pregunta -->
+  <section id="resultado" class="pantalla oculto">
+    <div class="contenido-centro">
+      <div class="caja pila">
+        <div id="res-caja" class="resultado"></div>
+        <div class="tarjeta">
+          <div class="suave">Puntaje total</div>
+          <div id="res-total" style="font-family:Fredoka,sans-serif;font-size:32px"></div>
+          <div id="res-puesto" class="suave" style="margin-top:4px"></div>
+        </div>
+        <p class="suave">Mira la pantalla principal 👀</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final -->
+  <section id="final" class="pantalla oculto">
+    <div class="contenido-centro">
+      <div class="caja pila podio-mio" style="align-items:center">
+        <div id="final-buho" class="festejo"></div>
+        <div id="final-puesto" class="puesto-grande"></div>
+        <h2 id="final-titulo" style="font-size:28px"></h2>
+        <div class="tarjeta" style="width:100%"><span class="suave">Puntaje final</span><div id="final-puntaje" style="font-family:Fredoka,sans-serif;font-size:34px"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mensajes -->
+  <section id="mensaje" class="pantalla oculto">
+    <div class="contenido-centro">
+      <div class="caja pila" style="align-items:center">
+        <div class="icono-grande">🦉</div>
+        <h2 id="mensaje-texto" style="font-size:26px"></h2>
+        <button class="boton" type="button" onclick="location.href='/'">Volver al inicio</button>
+      </div>
+    </div>
+  </section>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/comun.js"></script>
+  <script src="/js/jugador.js"></script>
+</body>
+</html>
