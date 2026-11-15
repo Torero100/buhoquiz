@@ -2,3 +2,7 @@ node_modules/
 *.log
 .env
 ~$*
+
+# Respuestas de los juegos del curso: NO subir (el repositorio es publico)
+preguntas_curso/
+scripts/crear_preguntas_curso.js

@@ -26,7 +26,12 @@
     .reloj.urgente { background: var(--rojo); animation: pulso .5s infinite; box-shadow: 0 0 16px rgba(232, 51, 109, .7); }
 
     .zona-opciones { flex: 1; display: flex; flex-direction: column; padding: 12px; gap: 12px; }
-    .aviso-tipo { text-align: center; font-size: 15px; color: var(--texto-suave); }
+    .aviso-tipo { font-size: 15px; color: var(--texto-suave); }
+    .fila-enunciado { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+    .boton-ver { font: inherit; font-size: 14px; color: #fff; background: rgba(3, 10, 35, .55); border: 1px solid var(--borde); border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+    .enunciado-movil { background: rgba(3, 10, 35, .55); border: 1px solid var(--borde); border-radius: 16px; padding: 12px 14px; font-size: clamp(16px, 4.4vw, 22px); line-height: 1.35; max-height: 38vh; max-height: 38dvh; overflow-y: auto; white-space: pre-line; }
+    .enunciado-movil img { display: block; max-width: 100%; max-height: 22vh; margin: 8px auto 0; border-radius: 10px; }
+    .enunciado-movil.oculto { display: none; }
     .rejilla { flex: 1; display: grid; gap: 12px; grid-template-columns: 1fr 1fr; grid-auto-rows: 1fr; }
     .rejilla.dos { grid-template-columns: 1fr; }
     .rejilla .opcion { flex-direction: column; justify-content: center; align-items: center; text-align: center; font-size: clamp(16px, 4.6vw, 24px); min-height: 110px; cursor: pointer; transition: transform .1s, filter .15s, opacity .15s; padding: 12px; }
@@ -83,6 +88,7 @@
         <h2 style="font-size:30px">¡Estás dentro!</h2>
         <div class="tarjeta" style="font-size:24px;font-family:Fredoka,sans-serif" id="espera-nombre"></div>
         <p class="suave">Mira la pantalla principal.<br>El juego empezará en un momento.</p>
+        <p class="suave" style="font-size:14px">📱 La pregunta también aparecerá en tu celular.<br>Si ya la ves en la pantalla principal, puedes ocultarla con el botón <b>🙈 Ocultar pregunta</b>.</p>
         <div class="puntos-espera"><i></i><i></i><i></i></div>
       </div>
     </div>
@@ -96,7 +102,11 @@
       <span class="nombre" id="r-nombre"></span>
     </div>
     <div class="zona-opciones">
-      <div id="r-aviso" class="aviso-tipo"></div>
+      <div class="fila-enunciado">
+        <div id="r-aviso" class="aviso-tipo"></div>
+        <button id="r-ver" class="boton-ver" type="button" aria-pressed="true">🙈 Ocultar pregunta</button>
+      </div>
+      <div id="r-enunciado" class="enunciado-movil"></div>
       <div id="r-rejilla" class="rejilla"></div>
       <button id="r-enviar" class="boton oro ancho grande oculto" type="button">Enviar respuesta</button>
       <div id="r-error" class="error-msg" style="text-align:center"></div>
@@ -139,6 +149,13 @@
         <div id="final-puesto" class="puesto-grande"></div>
         <h2 id="final-titulo" style="font-size:28px"></h2>
         <div class="tarjeta" style="width:100%"><span class="suave">Puntaje final</span><div id="final-puntaje" style="font-family:Fredoka,sans-serif;font-size:34px"></div></div>
+        <div class="contacto">
+          <p>🦉 ¿Te gustó BúhoQuiz? Sígueme o escríbeme</p>
+          <div class="enlaces">
+            <a href="https://www.tiktok.com/@roberthrodriguezt" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>@roberthrodriguezt</a>
+            <a href="mailto:buho.creativo2026@gmail.com"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>buho.creativo2026@gmail.com</a>
+          </div>
+        </div>
       </div>
     </div>
   </section>

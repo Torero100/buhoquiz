@@ -107,6 +107,7 @@
 
     seleccion = new Set();
     const p = e.pregunta;
+    pintarEnunciado(p);
     const multiple = p.tipo === 'MULTIPLE';
     $('r-aviso').textContent = multiple ? '✨ Varias respuestas correctas: marca todas y pulsa Enviar' : p.tipo === 'VF' ? '¿Verdadero o falso?' : 'Elige una respuesta';
     const rejilla = $('r-rejilla');
@@ -132,7 +133,33 @@
     $('r-enviar').disabled = true;
   }
 
-  $('r-enviar').addEventListener('click', () => { if (seleccion.size) enviar([...seleccion]); });
+  // Enunciado en el celular: visible por defecto; el alumno puede ocultarlo y la preferencia se recuerda.
+  let verPregunta = leer('buhoquiz_ver_pregunta') !== false;
+  function aplicarVer() {
+    $('r-enunciado').classList.toggle('oculto', !verPregunta);
+    $('r-ver').textContent = verPregunta ? '🙈 Ocultar pregunta' : '👁 Ver pregunta';
+    $('r-ver').setAttribute('aria-pressed', String(verPregunta));
+  }
+  $('r-ver').addEventListener('click', () => {
+    verPregunta = !verPregunta;
+    guardar('buhoquiz_ver_pregunta', verPregunta);
+    aplicarVer();
+  });
+  aplicarVer();
+
+  function pintarEnunciado(p) {
+    const caja = $('r-enunciado');
+    const hijos = [el('div', {}, p.texto || '')];
+    if (p.imagen) {
+      const img = el('img', { src: p.imagen, alt: '', referrerpolicy: 'no-referrer' });
+      img.addEventListener('error', () => img.remove());
+      hijos.push(img);
+    }
+    caja.replaceChildren(...hijos);
+    caja.scrollTop = 0;
+  }
+
+  $('r-enviar').addEventListener('click',() => { if (seleccion.size) enviar([...seleccion]); });
 
   let enviando = false;
   function enviar(letras) {

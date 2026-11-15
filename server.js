@@ -165,7 +165,7 @@ function estadoJugador(j) {
   };
   if (juego.fase === 'pregunta' && p) {
     const a = j.respuestas[p.numero];
-    e.pregunta = { tipo: p.tipo, opciones: p.opciones };
+    e.pregunta = { tipo: p.tipo, texto: p.texto, imagen: urlImagen(p.imagen, juego.version), opciones: p.opciones };
     e.restanteMs = Math.max(0, juego.finPregunta - ahora());
     e.tiempo = p.tiempo;
     e.respondida = Boolean(a);
